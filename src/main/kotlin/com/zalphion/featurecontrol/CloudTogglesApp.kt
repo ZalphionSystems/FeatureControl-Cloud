@@ -3,7 +3,6 @@ package com.zalphion.featurecontrol
 import com.squareup.moshi.JsonAdapter
 import com.zalphion.featurecontrol.crypto.AppSecret
 import com.zalphion.featurecontrol.events.localEventBus
-import com.zalphion.featurecontrol.plugins.KotshiCloudJsonAdapterFactory
 import org.http4k.config.Environment
 import org.http4k.connect.amazon.CredentialsProvider
 import org.http4k.connect.amazon.core.model.Region
@@ -52,5 +51,8 @@ fun createCloudCore(
     config = config.copy(
         pageSize = env[CloudSettings.pageSize],
         invitationRetention = env[CloudSettings.invitationsRetention],
+        googleClientId = env[CloudSettings.googleClientId],
+        csrfTtl = env[CloudSettings.csrfTtl],
+        sessionLength = env[CloudSettings.sessionLength]
     )
 }

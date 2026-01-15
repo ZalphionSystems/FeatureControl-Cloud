@@ -36,7 +36,7 @@ internal val encryptedApiKeyAttr = Attribute.value(Base64String).required("encry
 internal val userIdAttr = Attribute.value(UserId).required("userId")
 internal val emailAddressAttr = Attribute.value(EmailAddress).required("emailAddress")
 
-fun CoreStorage.Companion.dynamoDb(
+internal fun CoreStorage.Companion.dynamoDb(
     dynamoDb: DynamoDb,
     applicationsTableName: TableName,
     featuresTableName: TableName,

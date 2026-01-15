@@ -8,7 +8,7 @@ import org.http4k.lens.uri
 import org.http4k.lens.value
 import java.time.Duration
 
-object CloudSettings {
+internal object CloudSettings {
     // general
     val pageSize = EnvironmentKey.int().defaulted("PAGE_SIZE", 100)
     val cdnHost = EnvironmentKey.uri().required("CDN_HOST")
