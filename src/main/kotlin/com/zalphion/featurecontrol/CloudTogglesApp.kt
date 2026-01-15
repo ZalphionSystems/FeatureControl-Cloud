@@ -1,15 +1,21 @@
 package com.zalphion.featurecontrol
 
+import com.squareup.moshi.JsonAdapter
 import com.zalphion.featurecontrol.crypto.AppSecret
 import com.zalphion.featurecontrol.events.localEventBus
+import com.zalphion.featurecontrol.plugins.KotshiCloudJsonAdapterFactory
 import org.http4k.config.Environment
 import org.http4k.connect.amazon.CredentialsProvider
 import org.http4k.connect.amazon.core.model.Region
 import org.http4k.connect.amazon.dynamodb.DynamoDb
 import org.http4k.connect.amazon.dynamodb.Http
 import org.http4k.core.HttpHandler
+import se.ansman.kotshi.KotshiJsonAdapterFactory
 import java.time.Clock
 import kotlin.random.Random
+
+@KotshiJsonAdapterFactory
+private object CloudJsonAdapterFactory : JsonAdapter.Factory by KotshiCloudJsonAdapterFactory
 
 fun createCloudCore(
     env: Environment,
@@ -39,6 +45,7 @@ fun createCloudCore(
     appSecret = appSecret,
     eventBusFn = ::localEventBus, // TODO sqs bus
     plugins = listOf(
+        CloudJsonAdapterFactory.asJsonPlugin()
         // TODO pro plugin
     )
 ).build {
