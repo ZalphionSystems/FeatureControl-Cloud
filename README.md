@@ -1,4 +1,4 @@
-![License](https://img.shields.io/badge/License-All%20Rights%20Reserved-blue)
+[![License](https://img.shields.io/badge/License-All%20Rights%20Reserved-blue)](https://github.com/ZalphionSystems/FeatureControl-Cloud/blob/main/LICENSE)
 
 
 # Feature Control - Cloud

@@ -8,6 +8,7 @@ dependencies {
 
     api("org.http4k:http4k-config")
     implementation("org.http4k:http4k-connect-amazon-dynamodb")
+    implementation("org.http4k:http4k-connect-amazon-secretsmanager")
     implementation("org.http4k:http4k-connect-amazon-ses")
 
     ksp("se.ansman.kotshi:compiler:_")
