@@ -1,0 +1,261 @@
+Parameters:
+  GlobalHostedZoneId:
+    Type: AWS::Route53::HostedZone::Id
+  GlobalHostedZoneName:
+    Type: String
+  SubDomain:
+    Type: String
+  CertificateArn:
+    Type: String
+
+Resources:
+  Teams:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: teamId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: teamId
+          KeyType: HASH
+
+  Members:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: memberId
+          AttributeType: S
+        - AttributeName: teamId
+          AttributeType: S
+        - AttributeName: userId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: memberId
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: users
+          KeySchema:
+            - AttributeName: userId
+              KeyType: HASH
+            - AttributeName: memberId
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: teams
+          KeySchema:
+            - AttributeName: teamId
+              KeyType: HASH
+            - AttributeName: userId
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+
+  TeamProjects:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: teamId
+          AttributeType: S
+        - AttributeName: projectId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: teamId
+          KeyType: HASH
+        - AttributeName: projectId
+          KeyType: RANGE
+
+  Users:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: userId
+          AttributeType: S
+        - AttributeName: emailAddress
+          AttributeType: S
+      KeySchema:
+        - AttributeName: userId
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: emails
+          KeySchema:
+            - AttributeName: emailAddress
+              KeyType: HASH
+            - AttributeName: userId
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+
+  Projects:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: projectId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: projectId
+          KeyType: HASH
+
+  Features:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: projectId
+          AttributeType: S
+        - AttributeName: featureKey
+          AttributeType: S
+      KeySchema:
+        - AttributeName: projectId
+          KeyType: HASH
+        - AttributeName: featureKey
+          KeyType: RANGE
+
+  ApiKeys:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: projectId
+          AttributeType: S
+        - AttributeName: environmentName
+          AttributeType: S
+        - AttributeName: hashedApiKey
+          AttributeType: S
+      KeySchema:
+        - AttributeName: hashedApiKey
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: lookup
+          KeySchema:
+            - AttributeName: projectId
+              KeyType: HASH
+            - AttributeName: environmentName
+              KeyType: RANGE
+          Projection:
+            ProjectionType: INCLUDE
+            NonKeyAttributes: [ encryptedApiKey ]
+
+  Invitations:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: invitationId
+          AttributeType: S
+        - AttributeName: teamId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: invitationId
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: teams
+          KeySchema:
+            - AttributeName: teamId
+              KeyType: HASH
+            - AttributeName: invitationId
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      TimeToLiveSpecification:
+        AttributeName: expiresOn
+        Enabled: true
+
+
+  AppSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      # manual because CFN is terrible at making a helpful secret name
+      Name: !Sub ${AWS::StackName}-app-secret
+      GenerateSecretString:
+        PasswordLength: 40 # Given full ASCII alphabet, should provide 256 bits of entropy
+
+  HostedZone:
+    Type: AWS::Route53::HostedZone
+    Properties:
+      Name: !Sub ${SubDomain}.${GlobalHostedZoneName}
+
+  HostedZoneDelegation:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref GlobalHostedZoneId
+      Name: !Sub ${SubDomain}.${GlobalHostedZoneName}
+      Type: NS
+      TTL: 300
+      ResourceRecords: !GetAtt HostedZone.NameServers
+
+  Assets:
+    Type: AWS::S3::Bucket
+
+  AssetsAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: !Sub ${AWS::StackName}-assets
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  AssetsCdn:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Comment: !Sub ${AWS::StackName}-assets
+        DefaultCacheBehavior:
+          AllowedMethods: [ GET, HEAD ]
+          TargetOriginId: s3origin
+          ViewerProtocolPolicy: redirect-to-https
+          OriginRequestPolicyId: 88a5eaf4-2fd4-4709-b370-b4c650ea3fcf # CORS-S3Origin
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6 # CachingOptimized
+          ResponseHeadersPolicyId: 5cc3b908-e619-4b99-88e5-2cf7f45965bd # CORS-With-Preflight
+        Enabled: true
+        Origins:
+          - DomainName: !GetAtt Assets.DomainName
+            Id: s3origin
+            OriginAccessControlId: !GetAtt AssetsAccessControl.Id
+            S3OriginConfig:
+              OriginAccessIdentity: ''
+        ViewerCertificate:
+          AcmCertificateArn: !Ref CertificateArn
+          SslSupportMethod: sni-only
+        Aliases:
+          - !Sub "assets.${SubDomain}.${GlobalHostedZoneName}"
+
+  AssetsAccessPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref Assets
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action: s3:GetObject
+            Effect: Allow
+            Resource: !Sub ${Assets.Arn}/*
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub arn:aws:cloudfront::${AWS::AccountId}:distribution/${AssetsCdn}
+          - Action: s3:ListBucket
+            Effect: Allow
+            Resource: !GetAtt Assets.Arn
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub arn:aws:cloudfront::${AWS::AccountId}:distribution/${AssetsCdn}
+
+  AssetsDomain:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZone
+      Name: !Sub "assets.${SubDomain}.${GlobalHostedZoneName}"
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt AssetsCdn.DomainName
+        HostedZoneId: Z2FDTNDATAQYW2  # CloudFront hosted zone ID (this is always the same)
+        EvaluateTargetHealth: false

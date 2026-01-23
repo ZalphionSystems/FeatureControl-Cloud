@@ -1,17 +1,18 @@
 plugins {
-    id("com.google.devtools.ksp")
+    alias(osslibs.plugins.ksp)
 }
 
 dependencies {
     api(project(":pro"))
     api("com.zalphion.featurecontrol:emails:latest-SNAPSHOT")
+    api(osslibs.http4k.config)
 
-    api("org.http4k:http4k-config")
-    implementation("org.http4k:http4k-connect-amazon-dynamodb")
-    implementation("org.http4k:http4k-connect-amazon-secretsmanager")
-    implementation("org.http4k:http4k-connect-amazon-ses")
+    implementation(platform(osslibs.http4k.bom))
+    implementation(libs.http4k.connect.amazon.dynamodb)
+    implementation(libs.http4k.connect.amazon.secretsmanager)
+    implementation(libs.http4k.connect.amazon.ses)
 
-    ksp("se.ansman.kotshi:compiler:_")
+    ksp(osslibs.kotshi.compiler)
 
-    testImplementation("org.http4k:http4k-connect-amazon-dynamodb-fake")
+    testImplementation(libs.http4k.connect.amazon.dynamodb.fake)
 }

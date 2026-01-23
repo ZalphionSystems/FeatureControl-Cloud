@@ -1,8 +1,104 @@
-Copyright (c) 2026 Zalphion Systems Inc. All rights reserved.
+Copyright (c) 2026 Zalphion Systems Inc.
+All rights reserved.
 
-This source code is "source-available" for inspection and educational
-purposes only. No rights are granted to use, modify, or redistribute
-this software in any form, for any purpose, without express written
-permission from the copyright holder.
+1. PURPOSE AND SCOPE
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
+This source code (the “Software”) is made available solely for
+inspection and educational purposes. This is not an open source
+license. No rights are granted except as expressly stated below.
+
+2. NO RIGHTS GRANTED
+
+Except for the limited right to inspect the Software as described in
+Section 3, no license or other rights are granted under this agreement,
+whether expressly, impliedly, by estoppel, or otherwise.
+
+Without limitation, you are not permitted to use, execute, run,
+deploy, modify, copy, distribute, sublicense, or create derivative
+works of the Software.
+
+3. PERMITTED INSPECTION
+
+You may inspect and review the Software solely for the purpose of
+understanding its design, structure, and implementation.
+
+Inspection does not include executing, compiling, or running the
+Software, in whole or in part, in any environment.
+
+4. PROHIBITED USES
+
+Without limiting the foregoing, the Software may not be:
+
+(a) executed, deployed, or run, in whole or in part, in any environment;
+
+(b) offered, provided, or made available to any third party as a
+    hosted service, software-as-a-service (SaaS),
+    platform-as-a-service (PaaS), or similar offering;
+
+(c) used to provide functionality, features, or services to any third
+    party, whether directly or indirectly, including over a network;
+
+(d) used for internal business purposes, whether commercial or
+    non-commercial;
+
+(e) used to develop, market, operate, or support any product or
+    service that is substantially similar to, competitive with, or
+    functionally equivalent to any product or service offered by
+    Zalphion Systems Inc., including but not limited to feature flag
+    management systems, configuration management platforms, or related
+    infrastructure tooling.
+
+5. NO DERIVATIVE WORKS OR FUNCTIONAL REUSE
+
+You may not create derivative works based on the Software.
+
+You may not use the Software, in whole or in part, as a reference,
+blueprint, specification, or guide for the purpose of developing,
+implementing, or operating software or services that are substantially
+similar to, competitive with, or functionally equivalent to the
+Software or any offering of Zalphion Systems Inc.
+
+6. CONDITIONS OF INSPECTION
+
+Any permitted inspection of the Software is subject to the following
+conditions:
+
+(a) all copyright notices and this license text must be retained;
+
+(b) the Software may not be copied except as strictly necessary for
+    transient inspection;
+
+(c) the Software may not be redistributed, shared, published, or
+    disclosed to any third party.
+
+7. NO CIRCUMVENTION
+
+You may not take any action intended to circumvent, evade, or
+undermine the restrictions of this license, including by modifying,
+restructuring, translating, or reimplementing the Software or its
+behavior for the purpose of enabling a use that is otherwise
+prohibited.
+
+8. TERMINATION AND ENFORCEMENT
+
+Any violation of this license automatically terminates any permissions
+granted herein.
+
+Zalphion Systems Inc. reserves the right to seek injunctive relief,
+damages, and any other remedies available under applicable law for any
+unauthorized use of the Software. You acknowledge that unauthorized
+use of the Software may cause irreparable harm for which monetary
+damages may be insufficient.
+
+9. GOVERNING LAW
+
+This license shall be governed by and construed in accordance with the
+laws of the jurisdiction in which Zalphion Systems Inc. is incorporated,
+without regard to conflict of law principles.
+
+10. DISCLAIMER OF WARRANTY
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND
+NONINFRINGEMENT.

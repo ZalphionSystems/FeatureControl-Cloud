@@ -1,0 +1,12 @@
+Parameters:
+  HostedZoneName:
+    Type: String
+
+Resources:
+  CanadaCert:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Sub "ca.${HostedZoneName}"
+      ValidationMethod: DNS
+      SubjectAlternativeNames:
+        - !Sub "assets.ca.${HostedZoneName}"
