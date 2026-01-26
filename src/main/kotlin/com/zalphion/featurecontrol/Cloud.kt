@@ -2,10 +2,14 @@ package com.zalphion.featurecontrol
 
 import com.squareup.moshi.JsonAdapter
 import com.zalphion.featurecontrol.crypto.AppSecret
+import com.zalphion.featurecontrol.emails.EmailSender
+import com.zalphion.featurecontrol.emails.email
+import com.zalphion.featurecontrol.emails.ses
 import com.zalphion.featurecontrol.events.localEventBus
 import com.zalphion.featurecontrol.plugins.Plugin
 import com.zalphion.featurecontrol.storage.StorageDriver
 import com.zalphion.featurecontrol.storage.dynamoDb
+import com.zalphion.featurecontrol.web.LOGIN_PATH
 import dev.forkhandles.result4k.onFailure
 import org.http4k.config.Environment
 import org.http4k.connect.amazon.CredentialsChain
@@ -17,6 +21,8 @@ import org.http4k.connect.amazon.dynamodb.Http
 import org.http4k.connect.amazon.secretsmanager.Http
 import org.http4k.connect.amazon.secretsmanager.SecretsManager
 import org.http4k.connect.amazon.secretsmanager.getSecretValue
+import org.http4k.connect.amazon.ses.Http
+import org.http4k.connect.amazon.ses.SES
 import org.http4k.core.HttpHandler
 import se.ansman.kotshi.KotshiJsonAdapterFactory
 import java.time.Clock
@@ -67,6 +73,10 @@ fun createCore(
         eventBusFn = ::localEventBus, // TODO sqs bus
         plugins = listOf(
             CloudJsonAdapterFactory.asJsonPlugin(),
+            Plugin.email(
+                emails = EmailSender.ses(SES.Http(region, credentialsProvider, internet, clock)),
+                loginUri = env[CloudSettings.origin].path(LOGIN_PATH),
+            ),
             Plugin.pro(
                 statesRepositoryName = env[CloudSettings.statesTableName].value,
                 segmentsRepositoryName = env[CloudSettings.segmentsTableName].value,
