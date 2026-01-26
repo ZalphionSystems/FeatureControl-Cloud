@@ -14,7 +14,7 @@ import org.http4k.connect.amazon.dynamodb.model.Projection
 import org.http4k.connect.amazon.dynamodb.model.ProjectionType
 import org.http4k.connect.amazon.dynamodb.model.TableName
 
-private fun createStorage(): Storage {
+private fun createStorage(pageSize: PageSize): StorageDriver {
     val client = FakeDynamoDb().client()
 
     client.createTable(
@@ -38,7 +38,7 @@ private fun createStorage(): Storage {
             )
         )
     ).onFailure { it.reason.throwIt() }
-    return Storage.dynamoDb(client)
+    return StorageDriver.dynamoDb(client, pageSize)
 }
 
-class DynamoStorageTest: StorageContract(createStorage())
+class DynamoStorageDriverTest: StorageDriverContract({ pageSize -> createStorage(pageSize)})

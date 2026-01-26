@@ -19,7 +19,7 @@ import org.http4k.connect.amazon.dynamodb.putItem
 import org.http4k.connect.amazon.dynamodb.query
 import org.http4k.lens.BiDiMapping
 
-fun Storage.Companion.dynamoDb(dynamoDb: DynamoDb) = object: Storage {
+fun StorageDriver.Companion.dynamoDb(dynamoDb: DynamoDb, pageSize: PageSize? = null) = object: StorageDriver {
 
     override fun <Doc : Any, GroupId: Any, ItemId: Any> create(
         name: String,
@@ -31,7 +31,8 @@ fun Storage.Companion.dynamoDb(dynamoDb: DynamoDb) = object: Storage {
         tableName = TableName.parse(name),
         documentMapper = documentMapper,
         groupIdMapper = groupIdMapper,
-        itemIdMapper = itemIdMapper
+        itemIdMapper = itemIdMapper,
+        pageSize = pageSize?.value
     )
 }
 
@@ -42,7 +43,8 @@ private val inverseIndexName = IndexName.parse("inverse")
     tableName: TableName,
     documentMapper: BiDiMapping<String, Doc>,
     groupIdMapper: BiDiMapping<String, GroupId>,
-    itemIdMapper: BiDiMapping<String, ItemId>
+    itemIdMapper: BiDiMapping<String, ItemId>,
+    pageSize: Int?
 ) = object: Repository<Doc, GroupId, ItemId> {
 
     private val groupIdAttr = Attribute.string().map(groupIdMapper).required("groupId")
@@ -68,7 +70,7 @@ private val inverseIndexName = IndexName.parse("inverse")
         .onFailure { it.reason.throwIt() }
         .item?.let(docAttr)
 
-    override fun list(group: GroupId, pageSize: Int) = Paginator<Doc, ItemId> { cursor ->
+    override fun list(group: GroupId) = Paginator<Doc, ItemId> { cursor ->
         val page = dynamoDb.query(
             TableName = tableName,
             KeyConditionExpression = "#group = :group",
@@ -84,7 +86,7 @@ private val inverseIndexName = IndexName.parse("inverse")
         )
     }
 
-    override fun listInverse(itemId: ItemId, pageSize: Int) = Paginator<Doc, GroupId> { cursor ->
+    override fun listInverse(itemId: ItemId) = Paginator<Doc, GroupId> { cursor ->
         val page = dynamoDb.query(
             TableName = tableName,
             IndexName = inverseIndexName,

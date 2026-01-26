@@ -3,7 +3,8 @@ package com.zalphion.featurecontrol
 import com.squareup.moshi.JsonAdapter
 import com.zalphion.featurecontrol.crypto.AppSecret
 import com.zalphion.featurecontrol.events.localEventBus
-import com.zalphion.featurecontrol.storage.Storage
+import com.zalphion.featurecontrol.plugins.Plugin
+import com.zalphion.featurecontrol.storage.StorageDriver
 import com.zalphion.featurecontrol.storage.dynamoDb
 import dev.forkhandles.result4k.onFailure
 import org.http4k.config.Environment
@@ -40,25 +41,37 @@ fun createCore(
         .onFailure { it.reason.throwIt() }
         .let { AppSecret.of(it.SecretString!!) }
 
+    val storageDriver = StorageDriver.dynamoDb(DynamoDb.Http(region, credentialsProvider, internet, clock))
+
     return CoreBuilder(
         clock = clock,
         random = random,
-        origin = env[CloudSettings.origin],
-        staticUri = env[CloudSettings.cdnHost],
-        storage = Storage.dynamoDb(DynamoDb.Http(region, credentialsProvider, internet, clock)),
-        appSecret = appSecret,
-        eventBusFn = ::localEventBus, // TODO sqs bus
-        plugins = listOf(
-            CloudJsonAdapterFactory.asJsonPlugin()
-            // TODO pro plugin
-        )
-    ).build {
-        config = config.copy(
-            pageSize = env[CloudSettings.pageSize],
+        config = CoreConfig(
+            origin = env[CloudSettings.origin],
+            staticUri = env[CloudSettings.cdnHost],
+            appSecret = appSecret,
             invitationRetention = env[CloudSettings.invitationsRetention],
             googleClientId = env[CloudSettings.googleClientId],
             csrfTtl = env[CloudSettings.csrfTtl],
-            sessionLength = env[CloudSettings.sessionLength]
+            sessionLength = env[CloudSettings.sessionLength],
+            teamsStorageName = env[CloudSettings.teamsTableName].value,
+            usersStorageName = env[CloudSettings.usersTableName].value,
+            membersStorageName = env[CloudSettings.membersTableName].value,
+            applicationsStorageName = env[CloudSettings.applicationsTableName].value,
+            featuresStorageName = env[CloudSettings.featuresTableName].value,
+            configsStorageName = env[CloudSettings.configsTableName].value,
+            configEnvironmentsTableName = env[CloudSettings.configEnvironmentsTableName].value,
+            apiKeysStorageName = env[CloudSettings.apiKeysTableName].value,
+        ),
+        storageDriver = storageDriver,
+        eventBusFn = ::localEventBus, // TODO sqs bus
+        plugins = listOf(
+            CloudJsonAdapterFactory.asJsonPlugin(),
+            Plugin.pro(
+                statesRepositoryName = env[CloudSettings.statesTableName].value,
+                segmentsRepositoryName = env[CloudSettings.segmentsTableName].value,
+                configVersionsRepositoryName = env[CloudSettings.configVersionsTableName].value
+            )
         )
-    }
+    ).build()
 }
