@@ -1,12 +1,14 @@
 package com.zalphion.featurecontrol
 
-import com.squareup.moshi.JsonAdapter
+import com.zalphion.featurecontrol.auth.PermissionsFactory
+import com.zalphion.featurecontrol.auth.multiTenant
 import com.zalphion.featurecontrol.crypto.AppSecret
 import com.zalphion.featurecontrol.emails.EmailSender
 import com.zalphion.featurecontrol.emails.email
 import com.zalphion.featurecontrol.emails.ses
 import com.zalphion.featurecontrol.events.localEventBus
 import com.zalphion.featurecontrol.plugins.Plugin
+import com.zalphion.featurecontrol.plugins.PluginFactory
 import com.zalphion.featurecontrol.storage.StorageDriver
 import com.zalphion.featurecontrol.storage.dynamoDb
 import com.zalphion.featurecontrol.web.LOGIN_PATH
@@ -24,14 +26,16 @@ import org.http4k.connect.amazon.secretsmanager.getSecretValue
 import org.http4k.connect.amazon.ses.Http
 import org.http4k.connect.amazon.ses.SES
 import org.http4k.core.HttpHandler
-import se.ansman.kotshi.KotshiJsonAdapterFactory
 import java.time.Clock
 import kotlin.random.Random
 
-@KotshiJsonAdapterFactory
-private object CloudJsonAdapterFactory : JsonAdapter.Factory by KotshiCloudJsonAdapterFactory
+fun Plugin.Companion.cloud() = object: PluginFactory<Plugin>(
+    permissionsFactoryFn = { PermissionsFactory.multiTenant(it) }
+) {
+    override fun createInternal(core: Core) = object: Plugin {}
+}
 
-fun createCore(
+fun createCloud(
     env: Environment,
     internet: HttpHandler,
     clock: Clock,
@@ -49,7 +53,7 @@ fun createCore(
 
     val storageDriver = StorageDriver.dynamoDb(DynamoDb.Http(region, credentialsProvider, internet, clock))
 
-    return CoreBuilder(
+    return createCore(
         clock = clock,
         random = random,
         config = CoreConfig(
@@ -72,7 +76,6 @@ fun createCore(
         storageDriver = storageDriver,
         eventBusFn = ::localEventBus, // TODO sqs bus
         plugins = listOf(
-            CloudJsonAdapterFactory.asJsonPlugin(),
             Plugin.email(
                 emails = EmailSender.ses(SES.Http(region, credentialsProvider, internet, clock)),
                 loginUri = env[CloudSettings.origin].path(LOGIN_PATH),
@@ -83,5 +86,5 @@ fun createCore(
                 configVersionsRepositoryName = env[CloudSettings.configVersionsTableName].value
             )
         )
-    ).build()
+    )
 }

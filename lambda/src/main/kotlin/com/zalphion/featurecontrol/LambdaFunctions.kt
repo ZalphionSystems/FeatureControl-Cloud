@@ -12,7 +12,7 @@ import java.time.Clock
 import kotlin.random.asKotlinRandom
 
 private val appLoader = AppLoader { envMap ->
-    createCore(
+    createCloud(
         env = Environment.from(envMap),
         internet = Java8HttpClient(),
         clock = Clock.systemUTC(),

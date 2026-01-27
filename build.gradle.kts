@@ -1,7 +1,3 @@
-plugins {
-    alias(osslibs.plugins.ksp)
-}
-
 dependencies {
     api(project(":pro"))
     api("com.zalphion.featurecontrol:emails:latest-SNAPSHOT")
@@ -11,8 +7,6 @@ dependencies {
     implementation(libs.http4k.connect.amazon.dynamodb)
     implementation(libs.http4k.connect.amazon.secretsmanager)
     implementation(libs.http4k.connect.amazon.ses)
-
-    ksp(osslibs.kotshi.compiler)
 
     testImplementation(libs.http4k.connect.amazon.dynamodb.fake)
 }
