@@ -84,7 +84,8 @@ fun createCloud(
                 statesRepositoryName = env[CloudSettings.statesTableName].value,
                 segmentsRepositoryName = env[CloudSettings.segmentsTableName].value,
                 configVersionsRepositoryName = env[CloudSettings.configVersionsTableName].value
-            )
+            ),
+            Plugin.cloud()
         )
     )
 }
