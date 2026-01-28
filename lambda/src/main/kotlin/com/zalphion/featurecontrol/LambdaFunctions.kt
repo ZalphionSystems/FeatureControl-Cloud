@@ -1,6 +1,5 @@
 package com.zalphion.featurecontrol
 
-import com.zalphion.featurecontrol.web.mergeRoutes
 import org.http4k.client.Java8HttpClient
 import org.http4k.config.Environment
 import org.http4k.server.SunHttp
@@ -18,7 +17,7 @@ private val appLoader = AppLoader { envMap ->
         internet = Java8HttpClient(),
         clock = Clock.systemUTC(),
         random = SecureRandom().asKotlinRandom()
-    ).mergeRoutes()
+    ).getRoutes()
 }
 
 @Suppress("Unused")
